@@ -84,8 +84,9 @@ package it.depends.challenge._2021._04._26.caesar;
 public class CaesarCipher {
     public static void main(String[] args) {
         //noinspection SpellCheckingInspection
-        System.out.println(shift("ABCDEFGHIKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwzyz", 1));
+        System.out.println(unshift("ABCDEFGHIKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwzyz", 1));
         System.out.println(shift("Daily Programmer!", 6));
+        System.out.println(unshift("Jgore Vxumxgsskx!", 6));
     }
 
     private static char warm(char character, int shift) {
@@ -109,6 +110,27 @@ public class CaesarCipher {
         return (char) shiftedCharAscii;
     }
 
+    private static char cool(char character, int shift){
+        if(!Character.isAlphabetic(character)) {
+            return character;
+        }
+
+        int min = 'a';
+        int max = 'z';
+
+        if(Character.isUpperCase(character)) {
+            min = 'A';
+            max = 'Z';
+        }
+
+        int shiftedCharAscii = character - (shift % 26);
+        if(shiftedCharAscii < min) {
+            shiftedCharAscii = max - (min - shiftedCharAscii - 1);
+        }
+
+        return (char) shiftedCharAscii;
+    }
+
     public static String shift(String plain, int shift) {
         char[] characters = plain.toCharArray();
         StringBuilder shiftedString = new StringBuilder();
@@ -118,4 +140,15 @@ public class CaesarCipher {
 
         return shiftedString.toString();
     }
+
+    public static String unshift(String plain, int shift) {
+        char[] characters = plain.toCharArray();
+        StringBuilder shiftedString = new StringBuilder();
+        for(char character: characters) {
+            shiftedString.append(cool(character, shift));
+        }
+
+        return shiftedString.toString();
+    }
+
 }
