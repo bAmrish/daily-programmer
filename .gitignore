@@ -1,0 +1,10 @@
+
+## Intellij Files
+.idea/
+*.iml
+
+## Output files
+out/
+build/
+log/
+
