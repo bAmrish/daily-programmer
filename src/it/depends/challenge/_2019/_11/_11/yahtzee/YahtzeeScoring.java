@@ -1,5 +1,8 @@
 package it.depends.challenge._2019._11._11.yahtzee;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <h1>[2019-11-11] Challenge #381 [Easy] Yahtzee Upper Section Scoring</h1>
  *  This challenge was originally posted here:
@@ -66,9 +69,25 @@ public class YahtzeeScoring {
         assert yahtzee_upper(new int[]{1, 1, 1, 3, 3}) == 6;
         assert yahtzee_upper(new int[]{1, 2, 3, 4, 5}) == 5;
         assert yahtzee_upper(new int[]{6, 6, 6, 6, 6}) == 30;
+        assert yahtzee_upper(new int[]{1654, 1654, 50995, 30864, 1654, 50995, 22747,
+                1654, 1654, 1654, 1654, 1654, 30864, 4868, 1654, 4868, 1654,
+                30864, 4868, 30864}) == 123456;
     }
 
-    public static int yahtzee_upper(int[] scores) {
-        return 0;
+    public static int yahtzee_upper(int[] roll) {
+        Map<Integer, Integer> rollValueFrequency = new HashMap<>();
+        final int[] maxScore = {0};
+
+        for (Integer roleValue : roll) {
+            Integer frequency = rollValueFrequency.getOrDefault(roleValue, 0);
+            rollValueFrequency.put(roleValue, ++frequency);
+        }
+
+        rollValueFrequency.forEach((rollValue, frequency) -> {
+            int valueScore = rollValue * frequency;
+            maxScore[0] = Math.max(maxScore[0], valueScore);
+        });
+
+        return maxScore[0];
     }
 }
