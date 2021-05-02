@@ -1,13 +1,20 @@
 package it.depends.challenge._2019._11._11.yahtzee;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * <h1>[2019-11-11] Challenge #381 [Easy] Yahtzee Upper Section Scoring</h1>
- *  This challenge was originally posted here:
- *  <br><br>
- *  https://www.reddit.com/r/dailyprogrammer/comments/dv0231/20191111_challenge_381_easy_yahtzee_upper_section/
+ * This challenge was originally posted here:
+ * <br><br>
+ * https://www.reddit.com/r/dailyprogrammer/comments/dv0231/20191111_challenge_381_easy_yahtzee_upper_section/
  *
  * <br><br>
  * <h2>Description</h2>
@@ -57,37 +64,77 @@ import java.util.Map;
  * But for rough comparison, my Python solution on this challenge input,
  * consisting of 100,000 values between 1 and 999,999,999 takes about 0.2 seconds (0.06 seconds not counting input parsing).
  *
- * <br><br>https://gist.githubusercontent.com/cosmologicon/beadf49c9fe50a5c2a07ab8d68093bd0/raw/fb5af1a744faf79d64e2a3bb10973e642dc6f7b0/yahtzee-upper-1.txt
+ * <br><br>
+ * https://gist.githubusercontent.com/cosmologicon/beadf49c9fe50a5c2a07ab8d68093bd0/raw/fb5af1a744faf79d64e2a3bb10973e642dc6f7b0/yahtzee-upper-1.txt
  * <br>
  * <br>
- * If you're preparing for a coding interview, this is a good opportunity to practice runtime complexity. Try to find a solution that's linear (O(N)) in both time and space requirements.
+ * If you're preparing for a coding interview, this is a good opportunity to practice runtime complexity.
+ * Try to find a solution that's linear {@code (O(N))} in both time and space requirements.
  */
 public class YahtzeeScoring {
+    private static final String LARGE_INPUT_FILE_PATH
+            = "it/depends/challenge/_2019/_11/_11/yahtzee/large-input.txt";
+
     public static void main(String[] args) {
-        assert yahtzee_upper(new int[]{2, 3, 5, 5, 6}) == 10;
-        assert yahtzee_upper(new int[]{1, 1, 1, 1, 3}) == 4;
-        assert yahtzee_upper(new int[]{1, 1, 1, 3, 3}) == 6;
-        assert yahtzee_upper(new int[]{1, 2, 3, 4, 5}) == 5;
-        assert yahtzee_upper(new int[]{6, 6, 6, 6, 6}) == 30;
-        assert yahtzee_upper(new int[]{1654, 1654, 50995, 30864, 1654, 50995, 22747,
+        assert yahtzee_upper(new double[]{2, 3, 5, 5, 6}) == 10;
+        assert yahtzee_upper(new double[]{1, 1, 1, 1, 3}) == 4;
+        assert yahtzee_upper(new double[]{1, 1, 1, 3, 3}) == 6;
+        assert yahtzee_upper(new double[]{1, 2, 3, 4, 5}) == 5;
+        assert yahtzee_upper(new double[]{6, 6, 6, 6, 6}) == 30;
+        assert yahtzee_upper(new double[]{1654, 1654, 50995, 30864, 1654, 50995, 22747,
                 1654, 1654, 1654, 1654, 1654, 30864, 4868, 1654, 4868, 1654,
                 30864, 4868, 30864}) == 123456;
+
+        long startTime = System.currentTimeMillis();
+
+        double[] rollValues = getValuesFromFile();
+
+        long fileReadEndTime = System.currentTimeMillis();
+
+        double score = yahtzee_upper(rollValues);
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println(score);
+        System.out.println("Total Time to read input = " + (fileReadEndTime - startTime) + " ms");
+        System.out.println("Total Time to cal score  = " + (endTime - fileReadEndTime) + " ms");
+        System.out.println("Total Processing time    = " + (endTime - startTime) + " ms");
     }
 
-    public static int yahtzee_upper(int[] roll) {
-        Map<Integer, Integer> rollValueFrequency = new HashMap<>();
-        final int[] maxScore = {0};
+    public static double yahtzee_upper(double[] roll) {
+        Map<Double, Double> rollValueFrequency = new HashMap<>();
+        final double[] maxScore = {0};
 
-        for (Integer roleValue : roll) {
-            Integer frequency = rollValueFrequency.getOrDefault(roleValue, 0);
+        for (Double roleValue : roll) {
+            Double frequency = rollValueFrequency.getOrDefault(roleValue, 0d);
             rollValueFrequency.put(roleValue, ++frequency);
         }
 
         rollValueFrequency.forEach((rollValue, frequency) -> {
-            int valueScore = rollValue * frequency;
+            double valueScore = rollValue * frequency;
             maxScore[0] = Math.max(maxScore[0], valueScore);
         });
 
         return maxScore[0];
+    }
+
+    private static double[] getValuesFromFile() {
+        List<Integer> values = new ArrayList<>();
+
+        try {
+            URI fileUri = Objects.requireNonNull(
+                    YahtzeeScoring.class.getClassLoader()
+                        .getResource(LARGE_INPUT_FILE_PATH)
+            ).toURI();
+            Scanner scanner = new Scanner(Paths.get(fileUri).toFile());
+            while (scanner.hasNext()) {
+                values.add(scanner.nextInt());
+            }
+
+        } catch (FileNotFoundException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        return values.stream().mapToDouble(Double::valueOf).toArray();
     }
 }
