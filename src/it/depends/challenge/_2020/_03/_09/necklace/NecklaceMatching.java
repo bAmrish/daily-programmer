@@ -152,7 +152,6 @@ public class NecklaceMatching {
         return repetition;
     }
 
-
     public static void findMatchingNecklaces() {
         List<String> words = getWordsFromFile(WORDS_FILE_PATH);
         int totalWords = words.size();
