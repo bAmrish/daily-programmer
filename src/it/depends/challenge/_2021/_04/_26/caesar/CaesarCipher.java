@@ -84,47 +84,52 @@ package it.depends.challenge._2021._04._26.caesar;
 public class CaesarCipher {
     public static void main(String[] args) {
         //noinspection SpellCheckingInspection
-        System.out.println(unshift("ABCDEFGHIKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwzyz", 1));
-        System.out.println(shift("Daily Programmer!", 6));
-        System.out.println(unshift("Jgore Vxumxgsskx!", 6));
+        System.out.println(shift("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 2));
+        System.out.println(guess("Zol abyulk tl puav h ulda."));
+        System.out.println(guess("Jgore Vxumxgsskx!"));
+        System.out.println(guess("Tfdv ef wlikyvi, wfi uvrky rnrzkj pfl rcc nzky erjkp, szx, " +
+                "gfzekp kvvky."));
+        System.out.println(guess("Qv wzlmz bw uiqvbiqv iqz-axmml dmtwkqbg, " +
+                "i aeittwe vmmla bw jmib qba eqvoa nwzbg-bpzmm bquma mdmzg amkwvl, " +
+                "zqopb?"));
     }
 
     private static char warm(char character, int shift) {
 
-        if(!Character.isAlphabetic(character)) {
+        if (!Character.isAlphabetic(character)) {
             return character;
         }
 
         int min = 'a';
         int max = 'z';
 
-        if(Character.isUpperCase(character)) {
+        if (Character.isUpperCase(character)) {
             min = 'A';
             max = 'Z';
         }
 
         int shiftedCharAscii = character + (shift % 26);
-        if(shiftedCharAscii > max) {
+        if (shiftedCharAscii > max) {
             shiftedCharAscii = min + (shiftedCharAscii - max - 1);
         }
         return (char) shiftedCharAscii;
     }
 
-    private static char cool(char character, int shift){
-        if(!Character.isAlphabetic(character)) {
+    private static char cool(char character, int shift) {
+        if (!Character.isAlphabetic(character)) {
             return character;
         }
 
         int min = 'a';
         int max = 'z';
 
-        if(Character.isUpperCase(character)) {
+        if (Character.isUpperCase(character)) {
             min = 'A';
             max = 'Z';
         }
 
         int shiftedCharAscii = character - (shift % 26);
-        if(shiftedCharAscii < min) {
+        if (shiftedCharAscii < min) {
             shiftedCharAscii = max - (min - shiftedCharAscii - 1);
         }
 
@@ -134,7 +139,7 @@ public class CaesarCipher {
     public static String shift(String plain, int shift) {
         char[] characters = plain.toCharArray();
         StringBuilder shiftedString = new StringBuilder();
-        for(char character: characters) {
+        for (char character : characters) {
             shiftedString.append(warm(character, shift));
         }
 
@@ -144,11 +149,37 @@ public class CaesarCipher {
     public static String unshift(String plain, int shift) {
         char[] characters = plain.toCharArray();
         StringBuilder shiftedString = new StringBuilder();
-        for(char character: characters) {
+        for (char character : characters) {
             shiftedString.append(cool(character, shift));
         }
 
         return shiftedString.toString();
+    }
+
+    public static String guess(String encrypted) {
+        int[] frequency = {3, -1, 1, 1, 4, 0, 0, 2, 2, -5, -2, 1, 0, 2, 3, 0, -6, 2, 2, 3, 1, -1, 0, -5, 0, -7};
+        int max = 0;
+        int shiftAtMax = 0;
+        String guess;
+        for (int shift = 0; shift < 26; shift++) {
+            int sum = 0;
+            String shifted = unshift(encrypted, shift);
+            char[] characters = shifted.toCharArray();
+            for (char character : characters) {
+                if (Character.isAlphabetic(character)) {
+                    int position = (int) Character.toLowerCase(character) - (int) 'a';
+                    sum += frequency[position];
+                }
+            }
+            if (sum >= max) {
+                max = sum;
+                shiftAtMax = shift;
+            }
+        }
+
+        guess = unshift(encrypted, shiftAtMax);
+
+        return guess;
     }
 
 }
