@@ -129,9 +129,7 @@ public class SmooshedMorse {
         challenge2(smorsesToWordsMap);
         challenge3(words);
         challenge4(words);
-
-        // NoT a valid solution.
-        // challenge5(smorsesToWordsMap);
+        challenge5(smorsesToWordsMap);
     }
 
     private static String smorse(String message) {
@@ -240,14 +238,21 @@ public class SmooshedMorse {
         // and check if any of the 13 letters code generated for existing words
         // match the combinations.
 
+        // get all possible combination of morse code of length 13.
         List<String> allCombinations = generateMorseCombinations(13);
 
+        // find all codes with length 13 or more.
         List<String> encoded = smorsesToWordsMap.keySet().stream()
-                .filter(code -> code.length() == 13)
+                .filter(code -> code.length() >= 13)
                 .collect(Collectors.toList());
 
+        // loop through each possible combination
+        // and check if the code pattern appears
+        // "within" the encodings for any of words.
         List<String> missingEncodings = allCombinations.stream()
-                .filter(combination -> !encoded.contains(combination))
+                .filter(combination ->
+                        encoded.stream().noneMatch(code -> code.contains(combination))
+                )
                 .collect(Collectors.toList());
 
         if (!missingEncodings.isEmpty()) {
@@ -256,7 +261,8 @@ public class SmooshedMorse {
             System.out.println("13-character sequences that does not appear in the encoding of any word");
             System.out.println(String.join("\n", missingEncodings));
         } else {
-            System.out.println("No other 13-letter letter word found that encodes to palindrome.");
+            System.out.println("No 13-character sequences were found that" +
+                    " does not appear in the encoding of any word.");
         }
 
     }
