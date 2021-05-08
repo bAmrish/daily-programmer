@@ -127,6 +127,7 @@ public class SmooshedMorse {
 
         challenge1(smorsesToWordsMap);
         challenge2(smorsesToWordsMap);
+        challenge3(words);
     }
 
     private static String smorse(String message) {
@@ -136,8 +137,8 @@ public class SmooshedMorse {
 
     /**
      * Challenge:
-     * The sequence -...-....-.--. is the code for four different words
-     * ("needing", "nervate", "niding", tiling).
+     * The sequence {@code -...-....-.--.} is the code for four different words
+     * ({@code "needing"}, {@code "nervate"}, {@code "niding"}, {@code "tiling"}).
      * Find the only sequence that's the code for 13 different words.
      */
     private static void challenge1(Map<String, List<String>> smorsesToWordsMap) {
@@ -155,7 +156,7 @@ public class SmooshedMorse {
 
     /**
      * Challenge 2
-     * "autotomous" encodes to .-..--------------..-..., which has 14 dashes in a row.
+     * {@code "autotomous"} encodes to {@code .-..--------------..-..}., which has 14 dashes in a row.
      * Find the only word that has 15 dashes in a row.
      */
     private static void challenge2(Map<String, List<String>> smorsesToWordsMap) {
@@ -173,6 +174,42 @@ public class SmooshedMorse {
         } else {
             System.out.println("No code found with 15 dashes");
         }
+    }
+
+    /**
+     * Call a word perfectly balanced if its code has the same number of dots as dashes.
+     * {@code "counterdemonstrations"} is one of two 21-letter words that's perfectly balanced.
+     * Find the other one.
+     */
+    private static void challenge3(List<String> words) {
+        @SuppressWarnings("SpellCheckingInspection")
+        Optional<String> theBalancedWord = words.stream()
+                .filter(word -> word.length() == 21)
+                .filter(word -> !word.equals("counterdemonstrations"))
+                .filter(word -> isBalanced(smorse(word)))
+                .findFirst();
+
+        if (theBalancedWord.isPresent()) {
+            System.out.println();
+            System.out.println("Challenge 3");
+            System.out.println("The Other 21-letter words that's perfectly balanced");
+            System.out.println("word: " + theBalancedWord.get());
+            System.out.println("code: " + smorse(theBalancedWord.get()));
+
+        } else {
+            System.out.println("No other 21-letter words that's perfectly balanced.");
+        }
+    }
+
+    /**
+     * A code is perfectly balanced if it has the same number of dots as dashes
+     * @param code - to check for balance.
+     * @return true - if the code is balanced. else false.
+     */
+    private static boolean isBalanced(String code) {
+        int dots = code.split("\\.").length;
+        int dashes = code.split("-").length;
+        return dots == dashes;
     }
 
     private static Map<String, List<String>> getSmorsesToWordsMap(List<String> words) {
