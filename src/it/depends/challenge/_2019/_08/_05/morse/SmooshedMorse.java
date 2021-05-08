@@ -1,7 +1,14 @@
 package it.depends.challenge._2019._08._05.morse;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -108,6 +115,8 @@ public class SmooshedMorse {
         put('y', "-.--");
         put('z', "--..");
     }};
+    private static final String WORDS_FILE_PATH
+            = "resources/enable1.txt";
 
     public static void main(String[] args) {
         assert smorse("sos").equals("...---...");
@@ -115,10 +124,59 @@ public class SmooshedMorse {
         assert smorse("programmer").equals(".--..-.-----..-..-----..-.");
         assert smorse("bits").equals("-.....-...");
         assert smorse("three").equals("-.....-...");
+
+        List<String> words = getWordsFromFile(WORDS_FILE_PATH);
+        Map<String, List<String>> smorsesToWordsMap = getSmorsesToWordsMap(words);
+
+        challenge1(words, smorsesToWordsMap);
     }
 
     private static String smorse(String message) {
         Stream<Character> messageStream = message.chars().mapToObj(c -> (char) c);
         return messageStream.map(MORSE_MAP::get).collect(Collectors.joining());
+    }
+
+    /**
+     * Challenge:
+     * The sequence -...-....-.--. is the code for four different words
+     * ("needing", "nervate", "niding", tiling).
+     * Find the only sequence that's the code for 13 different words.
+     */
+    private static void challenge1(List<String> words, Map<String, List<String>> smorsesToWordsMap) {
+        smorsesToWordsMap.forEach((code, wordList) -> {
+            if (wordList.size() == 13) {
+                System.out.println("Challenge 1");
+                System.out.println("Only sequence that's the code for 13 different words");
+                System.out.println("code: " + code);
+                System.out.println(wordList);
+            }
+        });
+    }
+
+    private static Map<String, List<String>> getSmorsesToWordsMap(List<String> words) {
+        Map<String, List<String>> smorsesToWordsMap = new HashMap<>();
+        for (String word : words) {
+            String code = smorse(word);
+            List<String> wordList = smorsesToWordsMap.getOrDefault(code, new ArrayList<>());
+            wordList.add(word);
+            smorsesToWordsMap.put(code, wordList);
+        }
+        return smorsesToWordsMap;
+    }
+
+    private static List<String> getWordsFromFile(String filePath) {
+        List<String> words = new ArrayList<>();
+        ClassLoader classLoader = SmooshedMorse.class.getClassLoader();
+        URL resource = classLoader.getResource(filePath);
+        try {
+            @SuppressWarnings("ConstantConditions")
+            Path path = Paths.get(resource.getPath());
+            Stream<String> lines = Files.lines(path);
+            words = lines.collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return words;
     }
 }
