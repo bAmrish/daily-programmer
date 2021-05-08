@@ -1,5 +1,10 @@
 package it.depends.challenge._2019._08._05.morse;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * <h1>[2019-08-05] Challenge #380 [Easy] Smooshed Morse Code 1</h1>
  *
@@ -31,42 +36,79 @@ package it.depends.challenge._2019._08._05.morse;
  * so you can't tell which one you would decode to without more information.
  * </p>
  *
- * <h2>Optional bonus challenges </h2>
+ * <p><h2>Optional bonus challenges </h2></p>
  *
  * <p>
  * For these challenges, use the enable1 word list. It contains 172,823 words.
  * If you encode them all, you would get a total of 2,499,157 dots and 1,565,081 dashes.
  * </p>
+ *
  * <p>
+ * <h2>Challenge 1</h2>
  * The sequence {@code -...-....-.--.} is the code for four different words
  * ({@code "needing"}, {@code "nervate"}, {@code "niding"}, tiling).
  * Find the only sequence that's the code for 13 different words.
  * </p>
+ *
  * <p>
+ * <h2>Challenge 2</h2>
  * {@code "autotomous"} encodes to {@code .-..--------------..-...}, which has 14 dashes in a row.
  * Find the only word that has 15 dashes in a row.
  * </p>
  *
  * <p>
+ * <h2>Challenge 3</h2>
  * Call a word perfectly balanced if its code has the same number of dots as dashes.
  * {@code "counterdemonstrations"} is one of two 21-letter words that's perfectly balanced. Find the other one.
  * </p>
  *
  * <p>
+ * <h2>Challenge 4</h2>
  * {@code "protectorate"} is 12 letters long and encodes to {@code .--..-.----.-.-.----.-..--.},
  * which is a palindrome (i.e. the string is the same when reversed).
  * Find the only 13-letter word that encodes to a palindrome.
  * </p>
  *
  * <p>
+ * <h2>Challenge 5</h2>
  * {@code --.---.---.--} is one of five 13-character sequences that does not appear in the encoding of any word.
  * Find the other four.
- *
+ * </p>
  * <p>
  * Thanks to <b>u/Separate_Memory</b> for inspiring this challenge on <b>r/dailyprogrammer</b>_ideas!
+ * </p>
  */
 
 public class SmooshedMorse {
+    private static final Map<Character, String> MORSE_MAP = new HashMap<>() {{
+        put('a', ".-");
+        put('b', "-...");
+        put('c', "-.-.");
+        put('d', "-..");
+        put('e', ".");
+        put('f', "..-.");
+        put('g', "--.");
+        put('h', "....");
+        put('i', "..");
+        put('j', ".---");
+        put('k', "-.-");
+        put('l', ".-..");
+        put('m', "--");
+        put('n', "-.");
+        put('o', "---");
+        put('p', ".--.");
+        put('q', "--.-");
+        put('r', ".-.");
+        put('s', "...");
+        put('t', "-");
+        put('u', "..-");
+        put('v', "...-");
+        put('w', ".--");
+        put('x', "-..-");
+        put('y', "-.--");
+        put('z', "--..");
+    }};
+
     public static void main(String[] args) {
         assert smorse("sos").equals("...---...");
         assert smorse("daily").equals("-...-...-..-.--");
@@ -76,6 +118,7 @@ public class SmooshedMorse {
     }
 
     private static String smorse(String message) {
-        return null;
+        Stream<Character> messageStream = message.chars().mapToObj(c -> (char) c);
+        return messageStream.map(MORSE_MAP::get).collect(Collectors.joining());
     }
 }
