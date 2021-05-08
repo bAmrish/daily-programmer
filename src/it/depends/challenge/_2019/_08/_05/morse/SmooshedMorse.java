@@ -1,9 +1,6 @@
 package it.depends.challenge._2019._08._05.morse;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -128,7 +125,8 @@ public class SmooshedMorse {
         List<String> words = getWordsFromFile(WORDS_FILE_PATH);
         Map<String, List<String>> smorsesToWordsMap = getSmorsesToWordsMap(words);
 
-        challenge1(words, smorsesToWordsMap);
+        challenge1(smorsesToWordsMap);
+        challenge2(smorsesToWordsMap);
     }
 
     private static String smorse(String message) {
@@ -142,15 +140,39 @@ public class SmooshedMorse {
      * ("needing", "nervate", "niding", tiling).
      * Find the only sequence that's the code for 13 different words.
      */
-    private static void challenge1(List<String> words, Map<String, List<String>> smorsesToWordsMap) {
+    private static void challenge1(Map<String, List<String>> smorsesToWordsMap) {
         smorsesToWordsMap.forEach((code, wordList) -> {
             if (wordList.size() == 13) {
+                System.out.println();
                 System.out.println("Challenge 1");
                 System.out.println("Only sequence that's the code for 13 different words");
                 System.out.println("code: " + code);
-                System.out.println(wordList);
+                System.out.println("words: " + wordList);
+
             }
         });
+    }
+
+    /**
+     * Challenge 2
+     * "autotomous" encodes to .-..--------------..-..., which has 14 dashes in a row.
+     * Find the only word that has 15 dashes in a row.
+     */
+    private static void challenge2(Map<String, List<String>> smorsesToWordsMap) {
+        String fifteenDashes = "---------------";
+        Optional<String> theCode = smorsesToWordsMap.keySet().stream()
+                .filter(code -> code.contains(fifteenDashes))
+                .findFirst();
+        if (theCode.isPresent()) {
+            System.out.println();
+            System.out.println("Challenge 2");
+            System.out.println("The only word that has 15 dashes in a row");
+            System.out.println("code: " + theCode.get());
+            System.out.println("word: " + smorsesToWordsMap.get(theCode.get()));
+
+        } else {
+            System.out.println("No code found with 15 dashes");
+        }
     }
 
     private static Map<String, List<String>> getSmorsesToWordsMap(List<String> words) {
@@ -164,6 +186,7 @@ public class SmooshedMorse {
         return smorsesToWordsMap;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static List<String> getWordsFromFile(String filePath) {
         List<String> words = new ArrayList<>();
         ClassLoader classLoader = SmooshedMorse.class.getClassLoader();
