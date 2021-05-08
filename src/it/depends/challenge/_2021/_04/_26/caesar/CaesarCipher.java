@@ -82,16 +82,21 @@ package it.depends.challenge._2021._04._26.caesar;
  */
 
 public class CaesarCipher {
+    @SuppressWarnings("SpellCheckingInspection")
     public static void main(String[] args) {
         //noinspection SpellCheckingInspection
-        System.out.println(shift("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 2));
-        System.out.println(guess("Zol abyulk tl puav h ulda."));
-        System.out.println(guess("Jgore Vxumxgsskx!"));
-        System.out.println(guess("Tfdv ef wlikyvi, wfi uvrky rnrzkj pfl rcc nzky erjkp, szx, " +
-                "gfzekp kvvky."));
-        System.out.println(guess("Qv wzlmz bw uiqvbiqv iqz-axmml dmtwkqbg, " +
-                "i aeittwe vmmla bw jmib qba eqvoa nwzbg-bpzmm bquma mdmzg amkwvl, " +
-                "zqopb?"));
+        assert shift("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 2)
+                .equals("CDEFGHIJKLMNOPQRSTUVWXYZAB");
+        assert guess("Zol abyulk tl puav h ulda.")
+                .equals("She turned me into a newt.");
+        assert guess("Jgore Vxumxgsskx!")
+                .equals("Daily Programmer!");
+        assert guess("Tfdv ef wlikyvi, wfi uvrky rnrzkj pfl rcc nzky erjkp, szx, gfzekp kvvky.")
+                .equals("Come no further, for death awaits you all with nasty, big, pointy teeth.");
+        assert guess("Qv wzlmz bw uiqvbiqv iqz-axmml dmtwkqbg, " +
+                "i aeittwe vmmla bw jmib qba eqvoa nwzbg-bpzmm bquma mdmzg amkwvl, zqopb?")
+                .equals("In order to maintain air-speed velocity, " +
+                "a swallow needs to beat its wings forty-three times every second, right?");
     }
 
     private static char warm(char character, int shift) {
