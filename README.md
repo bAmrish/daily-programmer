@@ -20,7 +20,7 @@ You can run each solution class individually.
 > NOTE: You need to enable java `assert` keywords by passing -ea -enableassertions flag to the jvm.
 
 ### Problems solved so far...
-
+- [Smooshed Morse](src/it/depends/challenge/_2019/_08/_05/morse/SmooshedMorse.java)
 - [Yahtzee Upper Section Scoring](src/it/depends/challenge/_2019/_11/_11/yahtzee/YahtzeeScoring.java)
 - [Necklace matching Challenge](src/it/depends/challenge/_2020/_03/_09/necklace/NecklaceMatching.java)
 - [Caesar cipher](src/it/depends/challenge/_2021/_04/_26/caesar/CaesarCipher.java)
