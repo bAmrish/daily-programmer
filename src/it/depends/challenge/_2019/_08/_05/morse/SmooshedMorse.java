@@ -128,6 +128,7 @@ public class SmooshedMorse {
         challenge1(smorsesToWordsMap);
         challenge2(smorsesToWordsMap);
         challenge3(words);
+        challenge4(words);
     }
 
     private static String smorse(String message) {
@@ -199,6 +200,40 @@ public class SmooshedMorse {
         } else {
             System.out.println("No other 21-letter words that's perfectly balanced.");
         }
+    }
+
+    /**
+     * {@code "protectorate" }is 12 letters long and encodes to {@code .--..-.----.-.-.----.-..--.},
+     * which is a palindrome (i.e. the string is the same when reversed).
+     * Find the only 13-letter word that encodes to a palindrome.
+     */
+    private static void challenge4(List<String> words){
+        Optional<String> palindromeWord = words.stream()
+                .filter(word -> word.length() == 13)
+                .filter(word -> isPalindrome(smorse(word))).findFirst();
+
+        if (palindromeWord.isPresent()) {
+            System.out.println();
+            System.out.println("Challenge 4");
+            System.out.println("The only 13-letter word that encodes to a palindrome");
+            System.out.println("word: " + palindromeWord.get());
+            System.out.println("code: " + smorse(palindromeWord.get()));
+
+        } else {
+            System.out.println("No other 13-letter letter word found that encodes to palindrome.");
+        }
+    }
+
+    private static boolean isPalindrome(String code) {
+        String reverse =
+                // convert the input code to stream of letters.
+                Arrays.stream(code.split(""))
+                // and use the reduce function on the string to reverse it.
+                // we start with an empty string
+                // and append each letter to the beginning of accumulator,
+                // effectively reversing the original string
+                .reduce("", (reverseAcc, letter) -> letter + reverseAcc);
+        return reverse.equals(code);
     }
 
     /**
