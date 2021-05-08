@@ -129,6 +129,9 @@ public class SmooshedMorse {
         challenge2(smorsesToWordsMap);
         challenge3(words);
         challenge4(words);
+
+        // NoT a valid solution.
+        // challenge5(smorsesToWordsMap);
     }
 
     private static String smorse(String message) {
@@ -207,7 +210,7 @@ public class SmooshedMorse {
      * which is a palindrome (i.e. the string is the same when reversed).
      * Find the only 13-letter word that encodes to a palindrome.
      */
-    private static void challenge4(List<String> words){
+    private static void challenge4(List<String> words) {
         Optional<String> palindromeWord = words.stream()
                 .filter(word -> word.length() == 13)
                 .filter(word -> isPalindrome(smorse(word))).findFirst();
@@ -224,20 +227,55 @@ public class SmooshedMorse {
         }
     }
 
+    /**
+     * Challenge 5
+     * {@code --.---.---.--} is one of five 13-character sequences that does not appear in the encoding of any word.
+     * Find the other four.*
+     *
+     * [WIP] = Not a valid solution yet.
+     */
+    private static void challenge5(Map<String, List<String>> smorsesToWordsMap) {
+        // We use brute force approach here
+        // we generate all possible combinations 13-character sequences for morse code
+        // and check if any of the 13 letters code generated for existing words
+        // match the combinations.
+
+        List<String> allCombinations = generateMorseCombinations(13);
+
+        List<String> encoded = smorsesToWordsMap.keySet().stream()
+                .filter(code -> code.length() == 13)
+                .collect(Collectors.toList());
+
+        List<String> missingEncodings = allCombinations.stream()
+                .filter(combination -> !encoded.contains(combination))
+                .collect(Collectors.toList());
+
+        if (!missingEncodings.isEmpty()) {
+            System.out.println();
+            System.out.println("Challenge 5");
+            System.out.println("13-character sequences that does not appear in the encoding of any word");
+            System.out.println(String.join("\n", missingEncodings));
+        } else {
+            System.out.println("No other 13-letter letter word found that encodes to palindrome.");
+        }
+
+    }
+
     private static boolean isPalindrome(String code) {
         String reverse =
                 // convert the input code to stream of letters.
                 Arrays.stream(code.split(""))
-                // and use the reduce function on the string to reverse it.
-                // we start with an empty string
-                // and append each letter to the beginning of accumulator,
-                // effectively reversing the original string
-                .reduce("", (reverseAcc, letter) -> letter + reverseAcc);
+                        // and use the reduce function on the string to reverse it.
+                        // we start with an empty string
+                        // and append each letter to the beginning of accumulator,
+                        // effectively reversing the original string
+                        .reduce("", (reverseAcc, letter) -> letter + reverseAcc);
         return reverse.equals(code);
     }
 
     /**
      * A code is perfectly balanced if it has the same number of dots as dashes
+     *
      * @param code - to check for balance.
      * @return true - if the code is balanced. else false.
      */
@@ -245,6 +283,79 @@ public class SmooshedMorse {
         int dots = code.split("\\.").length;
         int dashes = code.split("-").length;
         return dots == dashes;
+    }
+
+    /**
+     * This function generates all smorses possible combinations for given length
+     * (irrespective of the validity).
+     * <p>
+     * Lets say {@code length = 3}, then there are {@code 2^3 = 8} possible combinations.
+     * <p>
+     * We do that by starting with a string with same character ({@code .})
+     * <pre>
+     *     ...
+     * </pre>
+     * Then we flip the last position and add that string to the array of current strings.
+     * <pre>
+     *     ...
+     *     .._
+     * </pre>
+     * Then we flip the {@code last - 1}  position of all the strings and add them to the list
+     * <pre>
+     *     ...
+     *     .._
+     *     ._.
+     *     .__
+     * </pre>
+     * Then we flip the {@code last - 2} position of all the current strings in the list
+     * and add the result back to the list.
+     * <pre>
+     *     ...
+     *     .._
+     *     ._.
+     *     .__
+     *     _..
+     *     _._
+     *     __.
+     *     ___
+     * </pre>
+     * <p>
+     * Now we have reached the start and we are all done!
+     * This is the same algorithm we use to flip string of the given length.
+     *
+     * @param length - length of the string.
+     */
+    private static List<String> generateMorseCombinations(int length) {
+
+        // we need minimum length of 2 to generate this combinations.
+        assert length > 1;
+
+        // This variable will hold all the possible combinations
+        List<String> combinations = new ArrayList<>();
+
+        // lets generate the first combination which will be all dots.
+        // and add it to the combinations.
+        String first = ".".repeat(length);
+        combinations.add(first);
+
+        // lets hold the bit we are going to flip in this variable
+        // starting with the last one.
+        int flipPosition = length - 1;
+        do {
+            // we will hold the new combinations generated in this array list.
+            List<String> newCombinations = new ArrayList<>();
+
+            for (String combination : combinations) {
+                // here we flip the char at "flipPosition"
+                String[] characters = combination.split("");
+                characters[flipPosition] = "-";
+                newCombinations.add(String.join("", characters));
+            }
+            combinations.addAll(newCombinations);
+            flipPosition--;
+        } while (flipPosition >= 0);
+
+        return combinations;
     }
 
     private static Map<String, List<String>> getSmorsesToWordsMap(List<String> words) {
