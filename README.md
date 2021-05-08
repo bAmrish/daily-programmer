@@ -14,6 +14,11 @@ You should be able to easily read the solutions to the problem.
 If you do find solutions that could be improved (in readability or maintainability)
 or in any other way please raise a PR with your solution.
 
+### Running the solutions
+You can run each solution class individually. 
+
+> NOTE: You need to enable java `assert` keywords by passing -ea -enableassertions flag to the jvm.
+
 ### Problems solved so far...
 
 - [Yahtzee Upper Section Scoring](src/it/depends/challenge/_2019/_11/_11/yahtzee/YahtzeeScoring.java)
