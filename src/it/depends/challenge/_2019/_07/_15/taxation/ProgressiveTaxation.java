@@ -1,5 +1,17 @@
 package it.depends.challenge._2019._07._15.taxation;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.lang.Float.parseFloat;
+import static java.lang.Integer.parseInt;
+
 /**
  * <h1>[2019-07-15] Challenge #379 [Easy] Progressive taxation
  * Challenge
@@ -110,11 +122,148 @@ package it.depends.challenge._2019._07._15.taxation;
  * That works fine, but if you want a performance boost, check out binary search.
  * You can also use algebra to reduce the number of calculations needed;
  * just make it so that your code still gives correct answers if you swap out a different set of tax brackets.
- *
  */
 
 public class ProgressiveTaxation {
-    public static void main(String[] args) {
+    private static final String TAX_FILE_PATH = "resources/taxation.csv";
 
+    public static void main(String[] args) {
+        TaxTable taxTable = readTaxTableFromFile(TAX_FILE_PATH);
+
+        assert taxTable.getTax(0) == 0;
+        assert taxTable.getTax(10000) == 0;
+        assert taxTable.getTax(10009) == 0;
+        assert taxTable.getTax(10010) == 1;
+        assert taxTable.getTax(12000) == 200;
+        assert taxTable.getTax(56789) == 8697;
+        assert taxTable.getTax(1234567) == 473326;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static TaxTable readTaxTableFromFile(String filePath) {
+        ClassLoader classLoader = ProgressiveTaxation.class.getClassLoader();
+        URL resource = classLoader.getResource(filePath);
+        TaxTable table = new TaxTable();
+
+        if (resource != null) {
+            String path = resource.getPath();
+            try {
+                Stream<String> lines = Files.lines(Path.of(path));
+                final int[] previousLimit = {0};
+                // This is the last row
+                lines.map(line -> line.split(","))
+                        .filter(tokens -> tokens.length == 2)
+                        .skip(1)
+                        .forEach(tokens -> getTaxBrackets(table, previousLimit, tokens));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return table;
+    }
+
+    private static void getTaxBrackets(TaxTable table, int[] previousLimit, String[] tokens) {
+
+        assert tokens.length == 2;
+
+        if (previousLimit[0] == Integer.MAX_VALUE) {
+            // In case there are more rows after the '--' bracket.
+            return;
+        }
+
+        String incomeCap = tokens[0].trim();
+        int lowerLimit = previousLimit[0];
+        int upperLimit;
+        if (incomeCap.equals("--")) {
+            upperLimit = Integer.MAX_VALUE;
+            previousLimit[0] = Integer.MAX_VALUE;
+        } else {
+            upperLimit = parseInt(tokens[0]);
+            previousLimit[0] = upperLimit;
+        }
+        float tax = parseFloat(tokens[1]);
+
+        table.getBrackets().add(new TaxBracket(lowerLimit, upperLimit, tax));
+    }
+}
+
+
+final class TaxBracket {
+    private int lowerLimit;
+    private int upperLimit;
+    private float tax;
+
+    public TaxBracket(int lowerLimit, int upperLimit, float tax) {
+        this.lowerLimit = lowerLimit;
+        this.upperLimit = upperLimit;
+        this.tax = tax;
+    }
+
+    public int getLowerLimit() {
+        return lowerLimit;
+    }
+
+    public void setLowerLimit(int lowerLimit) {
+        this.lowerLimit = lowerLimit;
+    }
+
+    public int getUpperLimit() {
+        return upperLimit;
+    }
+
+    public void setUpperLimit(int upperLimit) {
+        this.upperLimit = upperLimit;
+    }
+
+    public float getTax() {
+        return tax;
+    }
+
+    public void setTax(float tax) {
+        this.tax = tax;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + lowerLimit + ", " + upperLimit + ", " + tax + "]";
+    }
+}
+
+final class TaxTable {
+    private List<TaxBracket> brackets;
+
+    public TaxTable() {
+        brackets = new ArrayList<>();
+    }
+
+    public List<TaxBracket> getBrackets() {
+        return brackets;
+    }
+
+    public void setBrackets(List<TaxBracket> brackets) {
+        this.brackets = brackets;
+    }
+
+    public int getTax(int income) {
+        int totalTax = 0;
+        int remainingIncome = income;
+        int totalBrackets = brackets.size();
+
+        for (int i = totalBrackets - 1; i > 0; i--) {
+            TaxBracket bracket = brackets.get(i);
+            if (remainingIncome > bracket.getLowerLimit()) {
+                int difference = remainingIncome - bracket.getLowerLimit();
+                totalTax += (int) (difference * bracket.getTax());
+                remainingIncome -= difference;
+            }
+        }
+
+        return totalTax;
+    }
+
+    @Override
+    public String toString() {
+        return brackets.stream().map(TaxBracket::toString).collect(Collectors.joining("\n"));
     }
 }
