@@ -5,6 +5,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -127,6 +128,7 @@ import static java.lang.Integer.parseInt;
 public class ProgressiveTaxation {
     private static final String TAX_FILE_PATH = "resources/taxation.csv";
 
+    @SuppressWarnings("ConstantConditions")
     public static void main(String[] args) {
         TaxTable taxTable = readTaxTableFromFile(TAX_FILE_PATH);
 
@@ -137,6 +139,12 @@ public class ProgressiveTaxation {
         assert taxTable.getTax(12000) == 200;
         assert taxTable.getTax(56789) == 8697;
         assert taxTable.getTax(1234567) == 473326;
+
+        assert taxTable.getIncomeForOverallTax(0f) == 0;
+        assert taxTable.getIncomeForOverallTax(0.06f) == 25000;
+        assert taxTable.getIncomeForOverallTax(0.09f) == 34379;
+        assert taxTable.getIncomeForOverallTax(0.32f) == 256249;
+        assert taxTable.getIncomeForOverallTax(0.40f) == null;
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -184,7 +192,7 @@ public class ProgressiveTaxation {
         }
         float tax = parseFloat(tokens[1]);
 
-        table.getBrackets().add(new TaxBracket(lowerLimit, upperLimit, tax));
+        table.addBracket(new TaxBracket(lowerLimit, upperLimit, tax));
     }
 }
 
@@ -193,11 +201,21 @@ final class TaxBracket {
     private int lowerLimit;
     private int upperLimit;
     private float tax;
+    private Float upperOverallTax;
+    private Float lowerOverallTax;
 
     public TaxBracket(int lowerLimit, int upperLimit, float tax) {
         this.lowerLimit = lowerLimit;
         this.upperLimit = upperLimit;
         this.tax = tax;
+    }
+
+    public Float getUpperOverallTax() {
+        return upperOverallTax;
+    }
+
+    public void setUpperOverallTax(float upperOverallTax) {
+        this.upperOverallTax = upperOverallTax;
     }
 
     public int getLowerLimit() {
@@ -224,31 +242,62 @@ final class TaxBracket {
         this.tax = tax;
     }
 
+    public Float getLowerOverallTax() {
+        return lowerOverallTax;
+    }
+
+    public void setLowerOverallTax(Float lowerOverallTax) {
+        this.lowerOverallTax = lowerOverallTax;
+    }
+
     @Override
     public String toString() {
-        return "[" + lowerLimit + ", " + upperLimit + ", " + tax + "]";
+        return "[lowerLimit = " + lowerLimit + ", " +
+                "upperLimit = " + upperLimit + ", " +
+                "tax = " + tax + ", " +
+                "lowerOverallTax = " + lowerOverallTax + ", " +
+                "upperOverallTax = " + upperOverallTax + "]";
     }
 }
 
 final class TaxTable {
+    private static final int PRECISION = 5;
     private List<TaxBracket> brackets;
+    private int totalBrackets = 0;
 
     public TaxTable() {
         brackets = new ArrayList<>();
     }
 
     public List<TaxBracket> getBrackets() {
-        return brackets;
+        return Collections.unmodifiableList(brackets);
     }
 
     public void setBrackets(List<TaxBracket> brackets) {
         this.brackets = brackets;
+        totalBrackets = brackets.size();
+    }
+
+    public void addBracket(TaxBracket bracket) {
+        brackets.add(bracket);
+        totalBrackets = brackets.size();
+
+        if (bracket.getLowerLimit() != 0) {
+            bracket.setLowerOverallTax(getOverallTax(bracket.getLowerLimit()));
+        } else {
+            bracket.setLowerOverallTax(0f);
+        }
+
+        bracket.setUpperOverallTax(getOverallTax(bracket.getUpperLimit()));
+    }
+
+    public int getTotalBrackets() {
+        return totalBrackets;
     }
 
     public int getTax(int income) {
         int totalTax = 0;
         int remainingIncome = income;
-        int totalBrackets = brackets.size();
 
         for (int i = totalBrackets - 1; i > 0; i--) {
             TaxBracket bracket = brackets.get(i);
@@ -260,6 +309,59 @@ final class TaxTable {
         }
 
         return totalTax;
+    }
+
+    public Integer getIncomeForOverallTax(float overallTax) {
+        // We will use the binary search algorithm to
+        // find the income range for overall tax;
+
+        // We can narrow down the range of binary search
+        // if we can find the tax bracket where the income lies.
+        // We have already calculated the overAll tax for each tax bracket.
+        // Find the tax bracket where the overall tax lies.
+        TaxBracket bracket = brackets.stream()
+                .filter(b -> b.getUpperOverallTax() != null)
+                .filter(b -> b.getLowerOverallTax() <= overallTax && b.getUpperOverallTax() >= overallTax)
+                .findFirst()
+                .orElse(null);
+
+        if (bracket == null) {
+            return null;
+        } else if (overallTax == bracket.getLowerOverallTax()) {
+            return bracket.getLowerLimit();
+        } else if (overallTax == bracket.getUpperOverallTax()) {
+            return bracket.getUpperLimit();
+        }
+
+        int lower = bracket.getLowerLimit();
+        int upper = bracket.getUpperLimit();
+        int midIncome = (lower + upper) / 2;
+        float midOverallTax = getOverallTax(midIncome);
+        int totalIterations = 0;
+
+        // we will cap the search to 100 iterations.
+        while (midOverallTax != overallTax && totalIterations < 100) {
+            if (midOverallTax > overallTax) {
+                upper = midIncome;
+            } else {
+                lower = midIncome;
+            }
+            midIncome = (lower + upper) / 2;
+            midOverallTax = getOverallTax(midIncome);
+            totalIterations++;
+        }
+
+        return midIncome;
+    }
+
+    private float getOverallTax(int income) {
+        float totalTax = getTax(income);
+        return setPrecision(totalTax / income, PRECISION);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private float setPrecision(float number, int decimal) {
+        return Float.parseFloat(String.format("%." + decimal + "f", number));
     }
 
     @Override
