@@ -1,5 +1,9 @@
 package it.depends.challenge._2019._05._20.havel.hakimi;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * <h1>[2019-05-20] Challenge #378 [Easy] The Havel-Hakimi algorithm for graph realization</h1>
  * Original Challenge posted here:
@@ -98,7 +102,7 @@ package it.depends.challenge._2019._05._20.havel.hakimi;
  * Like in warmup 1, it's okay if you want to reorder the answers in your result.
  *
  * <p><h2>Challenge: the Havel-Hakimi algorithm</h2>
- *
+ * <p>
  * Perform the Havel-Hakimi algorithm on a given sequence of answers.
  * This algorithm will return true if the answers are consistent
  * (i.e. it's possible that everyone is telling the truth) and
@@ -167,7 +171,6 @@ package it.depends.challenge._2019._05._20.havel.hakimi;
  * so start back at step 1 with this sequence. After your third pass you'll have [2, 0, 0].
  * On your fourth pass, you'll stop at step 5,
  * because you'll have N = 2 and an empty sequence ([]), and 2 > 0, so you will return false.
- *
  */
 
 public class HavelHakimi {
@@ -187,6 +190,38 @@ public class HavelHakimi {
     }
 
     private static boolean check(int[] answers) {
-        return false;
+        List<Integer> currentAnswers = Arrays.stream(answers)
+                .boxed() // convert from IntStream to Stream<Integers>
+                .filter(answer -> answer != 0) // remove 0 answers
+                .sorted((a, b) -> b - a) // sort descending
+                .collect(Collectors.toList()); // create a list
+
+        while (!currentAnswers.isEmpty()) {
+            // lets remove and analyze the largest answer
+            Integer largestAnswer = currentAnswers.remove(0);
+            final int currentSize = currentAnswers.size();
+
+            // if the answer is greater than the size of current participants
+            // its an inconsistency and we can return false.
+            if (largestAnswer > currentSize) {
+                return false;
+            }
+
+            // subtract 1 from rest of the answers
+            for (int i = 0; i < largestAnswer; i++) {
+                Integer answer = currentAnswers.get(i);
+                currentAnswers.set(i, answer - 1);
+            }
+            // remove answers that are now 0 and resort descending
+            currentAnswers = currentAnswers.stream()
+                    .filter(answer -> answer != 0)
+                    .sorted((a, b) -> b - a)
+                    .collect(Collectors.toList());
+
+            // repeat
+        }
+
+        // No inconsistency found.
+        return true;
     }
 }
