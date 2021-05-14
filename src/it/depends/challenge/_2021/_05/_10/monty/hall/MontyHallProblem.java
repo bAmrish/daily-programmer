@@ -4,9 +4,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@FunctionalInterface
 interface SelectionStrategy {
+}
+
+@FunctionalInterface
+interface RoundBasedSelectionStrategy extends SelectionStrategy {
     int getDoor(Round round);
+}
+
+@FunctionalInterface
+interface ContextBasedSelectionStrategy extends SelectionStrategy {
+    int getDoor(Round round, boolean wonLastRound);
 }
 
 /**
@@ -99,17 +107,41 @@ interface SelectionStrategy {
 public class MontyHallProblem {
 
     public static void main(String[] args) {
+
+        RoundBasedSelectionStrategy alice2ndDoorStrategy = round -> 1;
+        RoundBasedSelectionStrategy bob2ndDoorStrategy = round -> round.getMontySelection() == 2 ? 3 : 2;
+
+        final RoundBasedSelectionStrategy[] lastStrategy = {null};
+        ContextBasedSelectionStrategy frank2ndDoorStrategy = (round, wonLastRound) -> {
+
+            if (lastStrategy[0] == null) {
+                lastStrategy[0] = alice2ndDoorStrategy;
+                return alice2ndDoorStrategy.getDoor(round);
+            }
+
+            if (wonLastRound) {
+                return lastStrategy[0].getDoor(round);
+            }
+
+            // Switch strategy if you loose last round
+            if (lastStrategy[0] == alice2ndDoorStrategy) {
+                lastStrategy[0] = bob2ndDoorStrategy;
+                return bob2ndDoorStrategy.getDoor(round);
+            } else {
+                lastStrategy[0] = alice2ndDoorStrategy;
+                return alice2ndDoorStrategy.getDoor(round);
+            }
+        };
+
         new Scenario("Alice chooses door #1 in step 2, and always sticks with door #1 in step 4.")
                 .setFirstSelectionStrategy(round -> 1)
-                .setSecondSelectionStrategy(round -> 1)
+                .setSecondSelectionStrategy(alice2ndDoorStrategy)
                 .setTotalRounds(1000)
                 .simulate();
 
         new Scenario("Bob chooses door #1 in step 2, and always switches to the other closed door in step 4.")
                 .setFirstSelectionStrategy(round -> 1)
-                .setSecondSelectionStrategy(round ->
-                        round.getMontySelection() == 2 ? 3 : 2
-                )
+                .setSecondSelectionStrategy(bob2ndDoorStrategy)
                 .setTotalRounds(1000)
                 .simulate();
 
@@ -149,6 +181,16 @@ public class MontyHallProblem {
                 .setSecondSelectionStrategy(round -> round.getMontySelection() == 2 ? 1 : 2)
                 .setTotalRounds(1000)
                 .simulate();
+
+        new Scenario("Gina always uses either Alice's or Bob's strategy.\n" +
+                "She remembers whether her previous strategy worked and changes it accordingly.\n" +
+                "On her first game, she uses Alice's strategy. Thereafter, if she won the previous game,\n" +
+                "then she sticks with the same strategy as the previous game.\n" +
+                "If she lost the previous game, then she switches (Alice to Bob or Bob to Alice).")
+                .setFirstSelectionStrategy(round -> 1)
+                .setSecondSelectionStrategy(frank2ndDoorStrategy)
+                .setTotalRounds(1000)
+                .simulate();
     }
 }
 
@@ -165,12 +207,22 @@ class Scenario {
         this.totalRounds = 1;
     }
 
-    public Scenario setFirstSelectionStrategy(SelectionStrategy strategy) {
+    public Scenario setFirstSelectionStrategy(RoundBasedSelectionStrategy strategy) {
         this.firstSelectionStrategy = strategy;
         return this;
     }
 
-    public Scenario setSecondSelectionStrategy(SelectionStrategy strategy) {
+    public Scenario setFirstSelectionStrategy(ContextBasedSelectionStrategy strategy) {
+        this.firstSelectionStrategy = strategy;
+        return this;
+    }
+
+    public Scenario setSecondSelectionStrategy(RoundBasedSelectionStrategy strategy) {
+        this.secondSelectionStrategy = strategy;
+        return this;
+    }
+
+    public Scenario setSecondSelectionStrategy(ContextBasedSelectionStrategy strategy) {
         this.secondSelectionStrategy = strategy;
         return this;
     }
@@ -181,23 +233,42 @@ class Scenario {
     }
 
     public void simulate() {
+        boolean lastResult = true;
 
         for (int i = 0; i < totalRounds; i++) {
+
             // create a round;
             final Round round = new Round();
+            int firstSelection;
+            int secondSelection;
 
             // Player Makes the first Selection
-            int firstSelection = firstSelectionStrategy.getDoor(round);
+            if (firstSelectionStrategy instanceof RoundBasedSelectionStrategy) {
+                RoundBasedSelectionStrategy strategy = (RoundBasedSelectionStrategy) firstSelectionStrategy;
+                firstSelection = strategy.getDoor(round);
+            } else {
+                ContextBasedSelectionStrategy strategy = (ContextBasedSelectionStrategy) firstSelectionStrategy;
+                firstSelection = strategy.getDoor(round, lastResult);
+            }
+
             round.setPlayerFirstSelection(firstSelection);
 
             // Monty Makes the selection
             round.setMontySelection();
 
             // Player makes second selection
-            int secondSelection = secondSelectionStrategy.getDoor(round);
+            if (secondSelectionStrategy instanceof RoundBasedSelectionStrategy) {
+                RoundBasedSelectionStrategy strategy = (RoundBasedSelectionStrategy) secondSelectionStrategy;
+                secondSelection = strategy.getDoor(round);
+            } else {
+                ContextBasedSelectionStrategy strategy = (ContextBasedSelectionStrategy) secondSelectionStrategy;
+                secondSelection = strategy.getDoor(round, lastResult);
+            }
+
             round.setPlayerSecondSelection(secondSelection);
 
             results.put(i, round.didPlayerWin());
+            lastResult = round.didPlayerWin();
         }
 
         printResults();
