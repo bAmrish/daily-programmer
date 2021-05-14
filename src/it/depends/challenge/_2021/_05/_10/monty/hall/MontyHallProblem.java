@@ -1,5 +1,13 @@
 package it.depends.challenge._2021._05._10.monty.hall;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+@FunctionalInterface
+interface SelectionStrategy {
+    int getDoor(Round round);
+}
+
 /**
  * <h1>[2021-05-10] Challenge #389 [Easy] The Monty Hall problem</h1>
  * Challenge Originally posted here:<br>
@@ -91,7 +99,202 @@ package it.depends.challenge._2021._05._10.monty.hall;
 public class MontyHallProblem {
 
     public static void main(String[] args) {
+        new Scenario("Alice chooses door #1 in step 2, and always sticks with door #1 in step 4.")
+                .setFirstSelectionStrategy(round -> 1)
+                .setSecondSelectionStrategy(round -> 1)
+                .setTotalRounds(1000)
+                .simulate();
+
+        new Scenario("Bob chooses door #1 in step 2, and always switches to the other closed door in step 4.")
+                .setFirstSelectionStrategy(round -> 1)
+                .setSecondSelectionStrategy(round ->
+                        round.getMontySelection() == 2 ? 3 : 2
+                )
+                .setTotalRounds(1000)
+                .simulate();
+    }
+
+
+}
+
+class Scenario {
+    private final String description;
+    private final Map<Integer, Boolean> results;
+    private int totalRounds;
+    private SelectionStrategy firstSelectionStrategy;
+    private SelectionStrategy secondSelectionStrategy;
+
+    public Scenario(String description, int totalRounds) {
+        this.description = description;
+        this.results = new HashMap<>();
+        this.totalRounds = totalRounds;
 
     }
 
+    public Scenario(String description) {
+        this.description = description;
+        this.results = new HashMap<>();
+        this.totalRounds = 1;
+    }
+
+    public Scenario setFirstSelectionStrategy(SelectionStrategy strategy) {
+        this.firstSelectionStrategy = strategy;
+        return this;
+    }
+
+    public Scenario setSecondSelectionStrategy(SelectionStrategy strategy) {
+        this.secondSelectionStrategy = strategy;
+        return this;
+    }
+
+    public Scenario setTotalRounds(int totalRounds) {
+        this.totalRounds = totalRounds;
+        return this;
+    }
+
+    public void simulate() {
+
+        for (int i = 0; i < totalRounds; i++) {
+            // create a round;
+            final Round round = new Round();
+
+            // Player Makes the first Selection
+            int firstSelection = firstSelectionStrategy.getDoor(round);
+            round.setPlayerFirstSelection(firstSelection);
+
+            // Monty Makes the selection
+            round.setMontySelection();
+
+            // Player makes second selection
+            int secondSelection = secondSelectionStrategy.getDoor(round);
+            round.setPlayerSecondSelection(secondSelection);
+
+            results.put(i, round.didPlayerWin());
+        }
+
+        printResults();
+
+    }
+
+    void printResults() {
+        int totalWins = (int) results.entrySet().stream().filter(Map.Entry::getValue).count();
+        double percentWin = ((double) totalWins * 100) / totalRounds;
+        System.out.println("======================================================");
+        System.out.println("Scenario: ");
+        System.out.println(description);
+        System.out.println("Total Rounds: " + totalRounds);
+        System.out.println("Total Wins  : " + totalWins);
+        System.out.println("% Wins      : " + percentWin + "%");
+        System.out.println("======================================================");
+        System.out.println();
+
+    }
+}
+
+class Round {
+    List<Door> doors = new ArrayList<>();
+    private int prizeDoor;
+    private int playerSelection;
+    private int montySelection;
+
+    public Round() {
+        generateDoors();
+    }
+
+    /**
+     * Generate random integer number between min (inclusive) and max (inclusive)
+     */
+    private static int randomBetween(int min, int max) {
+        Random generator = new Random();
+
+        return min + generator.nextInt(max - min + 1);
+    }
+
+    public int getPrizeDoor() {
+        return prizeDoor;
+    }
+
+    public int getPlayerSelection() {
+        return playerSelection;
+    }
+
+    public int getMontySelection() {
+        return montySelection;
+    }
+
+    public void setPlayerFirstSelection(int playerSelection) {
+        this.playerSelection = playerSelection;
+    }
+
+    public void setPlayerSecondSelection(int playerSelection) {
+        if (montySelection == 0) {
+            System.out.println("Player can't set second selection until Monty has done is selection.");
+            return;
+        }
+
+        if (playerSelection == montySelection) {
+            System.out.println("Player can't select the same door as Monty.");
+            return;
+        }
+
+        this.playerSelection = playerSelection;
+    }
+
+    public void setMontySelection() {
+        if (playerSelection == 0) {
+            System.out.println("Monty cannot select unless player has selected first");
+            return;
+        }
+        List<Door> remainingDoors = doors.stream()
+                .filter(door -> !door.hasPrize() && door.getNumber() != playerSelection)
+                .collect(Collectors.toList());
+
+        if (remainingDoors.size() == 1) {
+            montySelection = remainingDoors.get(0).getNumber();
+        } else {
+            montySelection = remainingDoors.get(randomBetween(0, 1)).getNumber();
+        }
+    }
+
+    public boolean didPlayerWin() {
+        return playerSelection == prizeDoor;
+    }
+
+    private void generateDoors() {
+        prizeDoor = randomBetween(1, 3);
+        for (int i = 1; i <= 3; i++) {
+            Door door = new Door(i);
+            if (i == prizeDoor) {
+                door.setPrize(true);
+            }
+            doors.add(door);
+        }
+    }
+}
+
+class Door {
+    final private int number;
+    final private String name;
+    private boolean hasPrize;
+
+    public Door(int number) {
+        this.number = number;
+        this.name = "Door " + number;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean hasPrize() {
+        return hasPrize;
+    }
+
+    public void setPrize(boolean hasPrize) {
+        this.hasPrize = hasPrize;
+    }
 }
