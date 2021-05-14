@@ -21,6 +21,7 @@ You can run each solution class individually.
 
 ### Problems solved so far...
 
+- [Monty Hall Problem](src/it/depends/challenge/_2021/_05/_10/monty/hall/MontyHallProblem.java)
 - [Havel Hakimi](src/it/depends/challenge/_2019/_05/_20/havel/hakimi/HavelHakimi.java)
 - [Progressive Taxation](src/it/depends/challenge/_2019/_07/_15/taxation/ProgressiveTaxation.java)
 - [Smooshed Morse](src/it/depends/challenge/_2019/_08/_05/morse/SmooshedMorse.java)
