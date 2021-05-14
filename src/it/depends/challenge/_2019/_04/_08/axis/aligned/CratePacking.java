@@ -1,5 +1,8 @@
 package it.depends.challenge._2019._04._08.axis.aligned;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 /**
  * <h1>[2019-04-08] Challenge #377 [Easy] Axis-aligned crate packing </h1>
  * This challenge was originally posted here: <br><br>
@@ -128,5 +131,45 @@ package it.depends.challenge._2019._04._08.axis.aligned;
 public class CratePacking {
     public static void main(String[] args) {
 
+        assert fit1(25, 18, 6, 5) == 12;
+        assert fit1(10, 10, 1, 1) == 100;
+        assert fit1(12, 34, 5, 6) == 10;
+        assert fit1(12345, 678910, 1112, 1314) == 5676;
+        assert fit1(5, 100, 6, 1) == 0;
+
+        assert fit2(25, 18, 6, 5) == 15;
+        assert fit2(12, 34, 5, 6) == 12;
+        assert fit2(12345, 678910, 1112, 1314) == 5676;
+        assert fit2(5, 5, 3, 2) == 2;
+        assert fit2(5, 100, 6, 1) == 80;
+        assert fit2(5, 5, 6, 1) == 0;
+
+        assert fit3(10, 10, 10, 1, 1, 1) == 1000;
+        assert fit3(12, 34, 56, 7, 8, 9) == 32;
+        assert fit3(123, 456, 789, 10, 11, 12) == 32604;
+        assert fit3(1234567, 89101112, 13141516, 171819, 202122, 232425) == 174648;
+    }
+
+    public static int fit1(int crateX, int crateY, int boxX, int boxY) {
+        return (crateX / boxX) * (crateY / boxY);
+    }
+
+    public static int fit2(int crateX, int crateY, int boxX, int boxY) {
+        //noinspection SuspiciousNameCombination
+        return Math.max(fit1(crateX, crateY, boxX, boxY), fit1(crateX, crateY, boxY, boxX));
+    }
+
+
+    public static int fit3(int crateX, int crateY, int crateZ, int boxX, int boxY, int boxZ) {
+        Integer[] results = {
+                (crateX / boxX) * (crateY / boxY) * (crateZ / boxZ),
+                (crateX / boxX) * (crateY / boxZ) * (crateZ / boxY),
+                (crateX / boxY) * (crateY / boxX) * (crateZ / boxZ),
+                (crateX / boxY) * (crateY / boxZ) * (crateZ / boxX),
+                (crateX / boxZ) * (crateY / boxX) * (crateZ / boxY),
+                (crateX / boxZ) * (crateY / boxY) * (crateZ / boxX),
+        };
+
+        return Arrays.stream(results).max(Comparator.naturalOrder()).get();
     }
 }
