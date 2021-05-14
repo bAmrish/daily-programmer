@@ -20,14 +20,14 @@ You can run each solution class individually.
 > NOTE: You need to enable java `assert` keywords by passing -ea -enableassertions flag to the jvm.
 
 ### Problems solved so far...
-
-- [Monty Hall Problem](src/it/depends/challenge/_2021/_05/_10/monty/hall/MontyHallProblem.java)
+- [Axis Aligned Crate Packing](src/it/depends/challenge/_2019/_04/_08/axis/aligned/CratePacking.java)
 - [Havel Hakimi](src/it/depends/challenge/_2019/_05/_20/havel/hakimi/HavelHakimi.java)
 - [Progressive Taxation](src/it/depends/challenge/_2019/_07/_15/taxation/ProgressiveTaxation.java)
 - [Smooshed Morse](src/it/depends/challenge/_2019/_08/_05/morse/SmooshedMorse.java)
 - [Yahtzee Upper Section Scoring](src/it/depends/challenge/_2019/_11/_11/yahtzee/YahtzeeScoring.java)
 - [Necklace Matching](src/it/depends/challenge/_2020/_03/_09/necklace/NecklaceMatching.java)
 - [Caesar Cipher](src/it/depends/challenge/_2021/_04/_26/caesar/CaesarCipher.java)
+- [Monty Hall Problem](src/it/depends/challenge/_2021/_05/_10/monty/hall/MontyHallProblem.java)
 
 ### Credits
 
