@@ -2,6 +2,7 @@ package it.depends.challenge._2021._05._10.monty.hall;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @FunctionalInterface
 interface SelectionStrategy {
@@ -61,28 +62,27 @@ interface SelectionStrategy {
  * <p>
  * <h2>Optional bonus</h2>
  * <p>
- * <h3>Scenario 3</h3>
  * Find success rates for these other contestants:
  *
  * <p>
- * <h3>Scenario 4</h3>
+ * <h3>Scenario 3</h3>
  * Carol chooses randomly from the available options in both step 2 and step 4.
  *
  * <p>
- * <h3>Scenario 5</h3>
+ * <h3>Scenario 4</h3>
  * Dave chooses randomly in step 2, and always sticks with his door in step 4.
  *
  * <p>
- * <h3>Scenario 6</h3>
+ * <h3>Scenario 5</h3>
  * Erin chooses randomly in step 2, and always switches in step 4.
  *
  * <p>
- * <h3>Scenario 7</h3>
+ * <h3>Scenario 6</h3>
  * Frank chooses door #1 in step 2, and switches to door #2 if available in step 4.
  * If door #2 is not available because it was opened, then he stays with door #1.
  *
  * <p>
- * <h3>Scenario 8</h3>
+ * <h3>Scenario 7</h3>
  * Gina always uses either Alice's or Bob's strategy.
  * She remembers whether her previous strategy worked and changes it accordingly.
  * On her first game, she uses Alice's strategy. Thereafter, if she won the previous game,
@@ -112,9 +112,44 @@ public class MontyHallProblem {
                 )
                 .setTotalRounds(1000)
                 .simulate();
+
+        new Scenario("Carol chooses randomly from the available options in both step 2 and step 4.")
+                .setFirstSelectionStrategy(round -> Round.randomBetween(1, 3))
+                .setSecondSelectionStrategy(round -> {
+                    int randomChoice = Round.randomBetween(0, 1);
+                    return Stream.of(1, 2, 3)
+                            .filter(i -> round.getMontySelection() != i)
+                            .collect(Collectors.toList())
+                            .get(randomChoice);
+                })
+                .setTotalRounds(1000)
+                .simulate();
+
+        new Scenario("Dave chooses randomly in step 2, and always sticks with his door in step 4.")
+                .setFirstSelectionStrategy(round -> Round.randomBetween(1, 3))
+                .setSecondSelectionStrategy(Round::getPlayerSelection)
+                .setTotalRounds(1000)
+                .simulate();
+
+        //noinspection OptionalGetWithoutIsPresent
+        new Scenario("Erin chooses randomly in step 2, and always switches in step 4.")
+                .setFirstSelectionStrategy(round -> Round.randomBetween(1, 3))
+                .setSecondSelectionStrategy(round ->
+                        Stream.of(1, 2, 3)
+                                .filter(i -> i != round.getMontySelection())
+                                .filter(i -> i != round.getPlayerSelection())
+                                .findFirst().get()
+                )
+                .setTotalRounds(1000)
+                .simulate();
+
+        new Scenario("Frank chooses door #1 in step 2, and switches to door #2 if available in step 4.\n" +
+                "If door #2 is not available because it was opened, then he stays with door #1.")
+                .setFirstSelectionStrategy(round -> 1)
+                .setSecondSelectionStrategy(round -> round.getMontySelection() == 2 ? 1 : 2)
+                .setTotalRounds(1000)
+                .simulate();
     }
-
-
 }
 
 class Scenario {
@@ -123,13 +158,6 @@ class Scenario {
     private int totalRounds;
     private SelectionStrategy firstSelectionStrategy;
     private SelectionStrategy secondSelectionStrategy;
-
-    public Scenario(String description, int totalRounds) {
-        this.description = description;
-        this.results = new HashMap<>();
-        this.totalRounds = totalRounds;
-
-    }
 
     public Scenario(String description) {
         this.description = description;
@@ -180,8 +208,7 @@ class Scenario {
         int totalWins = (int) results.entrySet().stream().filter(Map.Entry::getValue).count();
         double percentWin = ((double) totalWins * 100) / totalRounds;
         System.out.println("======================================================");
-        System.out.println("Scenario: ");
-        System.out.println(description);
+        System.out.println("Scenario: " + description);
         System.out.println("Total Rounds: " + totalRounds);
         System.out.println("Total Wins  : " + totalWins);
         System.out.println("% Wins      : " + percentWin + "%");
@@ -204,7 +231,7 @@ class Round {
     /**
      * Generate random integer number between min (inclusive) and max (inclusive)
      */
-    private static int randomBetween(int min, int max) {
+    public static int randomBetween(int min, int max) {
         Random generator = new Random();
 
         return min + generator.nextInt(max - min + 1);
