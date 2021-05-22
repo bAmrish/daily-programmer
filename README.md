@@ -20,6 +20,7 @@ You can run each solution class individually.
 > NOTE: You need to enable java `assert` keywords by passing -ea -enableassertions flag to the jvm.
 
 ### Problems solved so far...
+- [Perfectly Balanced](src/it/depends/challenge/_2019/_01/_14/balanced/PerfectlyBalanced.java)
 - [Additive Persistence](src/it/depends/challenge/_2019/_01/_28/_add_persistence/AdditivePersistence.java)
 - [Just Add One](src/it/depends/challenge/_2019/_02/_11/_add/JustAddOne.java)
 - [Axis Aligned Crate Packing](src/it/depends/challenge/_2019/_04/_08/axis/aligned/CratePacking.java)
