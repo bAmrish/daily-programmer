@@ -33,5 +33,28 @@ package it.depends.challenge._2019._02._11._add;
  */
 public class JustAddOne {
     public static void main(String[] args) {
+        assert addOne(998) == 10109;
+    }
+
+    public static long addOne(int n) {
+        long product = 0;
+        int length = getTotalDigits(n);
+        int quotient = n;
+        for (int i = 0; i < length; i++) {
+            int remainder = quotient % 10;
+            if (i == 0) {
+                product = (remainder + 1);
+            } else if (remainder == 9) {
+                product = ((remainder + 1) * (long) Math.pow(10, getTotalDigits(product))) + product;
+            } else {
+                product = ((remainder + 1) * (long) Math.pow(10, getTotalDigits(product))) + product;
+            }
+            quotient = (quotient - remainder) / 10;
+        }
+        return product;
+    }
+
+    private static int getTotalDigits(long n) {
+        return (int) Math.floor(Math.log10(n)) + 1;
     }
 }
